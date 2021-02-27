@@ -23,13 +23,15 @@ let loadedFaceImage = [];
 
 //load trees and clouds
 
-let treeImg = './img/tree.png';
-let bubbleImg = './img/bubble.png';
 let backgroundImg = './img/background.png';
 
+let cloudAnim;
+let treeAnim;
+let bubbleAnim;
+let levelupAnim;
 
-let assetArray = [treeImg, bubbleImg, backgroundImg]
-let loadedAssetArray = [];
+let treeGroup;
+let bubleGroup;
 
 
 function chooseFace(){
@@ -40,10 +42,12 @@ function chooseFace(){
 }
 
 function loadOtherAssets(){
-    for (let displayImg of assetArray) {
-        loadedAssetArray.push(loadImage(displayImg));
-        console.log('loaded face' + displayImg)
-    }
+    //load animations
+    
+    treeAnim = loadAnimation('./img/anim/Tree/Tree_00000.png', './img/anim/Tree/Tree_00051.png');
+    cloudAnim = loadAnimation('./img/anim/Cloud/Cloud_00000.png', './img/anim/Cloud/Cloud_00052.png');
+    bubbleAnim = loadAnimation('./img/anim/Bubble/Bubble_00000.png', './img/anim/Bubble/Bubble_00050.png');
+
 }
 
 function preload() {
@@ -64,6 +68,8 @@ function cloudBoy(id, emotion, health, level) {
         let currentLevel = this.currentLevel
         this.currentLevel = currentLevel + e;
         //show level up animation here
+
+        
         console.log("current level is " + currentLevel)
     },
 
@@ -79,27 +85,27 @@ function cloudBoy(id, emotion, health, level) {
             case 'happy':
                 push();
                 console.log("your cloud is happy");
-                image(loadedFaceImage[faceImage.indexOf(happyFace)], this.currentPositionX + 66, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(happyFace)], this.currentPositionX, this.currentPositionY, 340, 340)
                 break;
             case 'sad':
                 push();
                 console.log("your cloud is sad");
-                image(loadedFaceImage[faceImage.indexOf(sadFace)], this.currentPositionX + 66, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(sadFace)], this.currentPositionX, this.currentPositionY, 340, 340)
                 break;
             case 'dead':
                 push();
                 console.log("your cloud is dead");
-                image(loadedFaceImage[faceImage.indexOf(deadFace)], this.currentPositionX + 66, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(deadFace)], this.currentPositionX, this.currentPositionY, 340, 340)
                 break;
             case 'levelup':
                 push();
                 console.log("your cloud is levellingup");
-                image(loadedFaceImage[faceImage.indexOf(levelupFace)], mouseX + 66, mouseY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(levelupFace)], this.currentPositionX, this.currentPositionY, 340, 340)
                 break;
             default:
                 push();
                 console.log("neutral");
-                image(loadedFaceImage[faceImage.indexOf(movingFace)], mouseX + 66, mouseY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(movingFace)], this.currentPositionX, this.currentPositionY, 340, 340)
         }
     }
 
@@ -116,17 +122,8 @@ function cloudBoy(id, emotion, health, level) {
 
         let cloudSize = 150 + this.currentLevel*10;
 
-        let posX = this.currentPositionX * this.characterID;
-        let posY = this.currentPositionY * this.characterID;
-
-        fill(255, 255, 255)
-        strokeWeight(0)
-        ellipse(posX + Math.sin(frameCount/10)*4, posY, cloudSize, cloudSize);
-        ellipse(posX + 60 + Math.sin(frameCount/12)*3, posY - Math.sin(frameCount/15)*3, cloudSize, cloudSize);
-        ellipse(posX + 120 + Math.sin(frameCount/11)*2, posY - Math.sin(frameCount/15)*2, cloudSize, cloudSize);
-        ellipse(posX + 140 + Math.sin(frameCount/12)*6, posY + 40 + Math.sin(frameCount/15)*5, cloudSize, cloudSize);
-        ellipse(posX + 60 + Math.sin(frameCount/13)*3, posY + 40 + Math.sin(frameCount/15)*3, cloudSize, cloudSize);
-        ellipse(posX - 20 + Math.sin(frameCount/13)*3, posY + 40 + Math.sin(frameCount/15)*5, cloudSize, cloudSize);
+        let posX = this.currentPositionX
+        let posY = this.currentPositionY 
         this.switchEmotion()
         imageMode(CENTER)
 
@@ -155,6 +152,7 @@ function cloudBoy(id, emotion, health, level) {
         });
 
         treeArray = treeArray.filter(t => !t.killed);
+        
     }
 
     this.eatBubble = () => {
@@ -193,9 +191,9 @@ function treeBoy(id, x, y) {
     this.render = () => {
         push();
 
-        translate(p5.Vector.fromAngle(millis() / 4000, 10))
-        image(loadedAssetArray[assetArray.indexOf(treeImg)], this.currentPositionX, this.currentPositionY, 170, 170)
-        rotate(frameCount/50 * hurricaneSlider)
+        //translate(p5.Vector.fromAngle(millis() / 4000, 10))
+        animation(treeAnim, this.currentPositionX, this.currentPositionY);
+        //rotate(frameCount/50 * hurricaneSlider)
     }
 }
 
@@ -209,7 +207,7 @@ function bubbleBoy(id, x, y) {
     this.render = () => {
         push();
 
-        image(loadedAssetArray[assetArray.indexOf(bubbleImg)], this.currentPositionX, this.currentPositionY, 170, 170);
+        animation(bubbleAnim, this.currentPositionX, this.currentPositionY);
     }
 }
 
@@ -294,12 +292,29 @@ let moveY = 0;
 function searchDevice(){
     microBit.searchDevice();
     addCloud()
-  }
+}
 
 function getAcc() {
 
-        accX = microBit.getAccelerometer().x/30
-        accY = microBit.getAccelerometer().y/30
+        accX = microBit.getAccelerometer().x/10
+        accY = microBit.getAccelerometer().y/10
+
+        if (accX > 5) {
+            moveX = moveX + 5;
+        } else if (accX < -5 ) {
+            moveX = moveX - 5;
+        } else {
+            moveX = moveX;
+        }
+
+        if (accY > 5) {
+            moveY = moveY + 5;
+        } else if (accY < -5 ) {
+            moveY = moveY - 5;
+        } else {
+            moveY = moveY;
+        }
+
 
         console.log(accX,accY)
 }
@@ -310,6 +325,8 @@ let delayTime = 0;
 let cloudCount = 0;
 
 function setup() {
+
+    frameRate(15)
 
     microBit.onConnect(function(){
         console.log("connected");
@@ -327,6 +344,9 @@ function setup() {
     characterArray.forEach((element, index) => {
         element.eatBubble();
     })
+
+    //setup animations
+
 
     //make test buttons
     starDustButton = createButton('Feed Star Dust');
@@ -353,6 +373,7 @@ function setup() {
   
 function draw() {
     delayTime++;
+    drawSprites();
 
     hurricaneSlider = blowSlider.value();
     background(228, 241, 245)
@@ -368,27 +389,34 @@ function draw() {
         
     })
 
+    //microbit get data every frame
+
     getAcc()
 
     characterArray.forEach((element, index) => {
         element.render();
-        element.currentPositionX = windowWidth/2 + moveX;
-        element.currentPositionY = windowHeight/2 + moveY;
+        element.currentPositionX = mouseX;
+        element.currentPositionY = mouseY;
 
 
         //boundary
 
         if (element.currentPositionX > windowWidth) {
             element.currentPositionX = windowWidth;
+            moveX = windowWidth;
         } else if (element.currentPositionY > windowHeight) {
             element.currentPositionY = windowHeight;
+            moveY = windowHeight;
         } else if (element.currentPositionX < 0) {
-            element.currentPositionX = 0
+            element.currentPositionX = 0;
+            moveX = 0;
         } else if (element.currentPositionY < 0) {
-            element.currentPositionY = 0
+            element.currentPositionY = 0;
+            moveY = 0;
         }
 
         console.log(element.currentPositionX)
+        console.log(moveX)
 
         element.eatTree()
         element.eatBubble()
@@ -399,8 +427,6 @@ function draw() {
                 element.currentEmotion = 'dead';
         } else if ( starDustToggle ) {
                 element.currentEmotion = 'levelup';
-        } else {
-            element.currentEmotion = 'happy';
         }
     })
 
