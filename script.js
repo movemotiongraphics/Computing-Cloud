@@ -28,10 +28,13 @@ let backgroundImg = './img/background.png';
 let cloudAnim;
 let treeAnim;
 let bubbleAnim;
-let levelupAnim;
+let disperseAnim;
+let starAnim;
 
 let treeGroup;
 let bubleGroup;
+
+var direction = 90; 
 
 
 function chooseFace(){
@@ -47,6 +50,8 @@ function loadOtherAssets(){
     treeAnim = loadAnimation('./img/anim/Tree/Tree_00000.png', './img/anim/Tree/Tree_00051.png');
     cloudAnim = loadAnimation('./img/anim/Cloud/Cloud_00000.png', './img/anim/Cloud/Cloud_00052.png');
     bubbleAnim = loadAnimation('./img/anim/Bubble/Bubble_00000.png', './img/anim/Bubble/Bubble_00050.png');
+    starAnim = loadAnimation('./img/anim/Star/Star_00000.png', './img/anim/Star/Star_00052.png');
+    disperseAnim = loadAnimation('./img/anim/CloudSplit/CloudSplit_00000.png', './img/anim/CloudSplit/CloudSplit_00052.png');
 
 }
 
@@ -62,13 +67,15 @@ function cloudBoy(id, emotion, health, level) {
     this.currentLevel = level,
     this.currentPositionX = 1,
     this.currentPositionY = 1,
+    this.currentAnimationState = 'floating',
 
 
     this.levelUp = (e) => {
         let currentLevel = this.currentLevel
         this.currentLevel = currentLevel + e;
         //show level up animation here
-
+        this.currentAnimationState = 'levelup';
+        this.currentEmotion = 'levelup';
         
         console.log("current level is " + currentLevel)
     },
@@ -80,32 +87,67 @@ function cloudBoy(id, emotion, health, level) {
         console.log("current level is " + currentLevel)
     }
 
-    this.switchEmotion = () => {
+    this.switchEmotion = (x,y) => {
         switch (this.currentEmotion) {
             case 'happy':
                 push();
                 console.log("your cloud is happy");
-                image(loadedFaceImage[faceImage.indexOf(happyFace)], this.currentPositionX, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(happyFace)], x - 160, y - 180, 340, 340)
                 break;
             case 'sad':
                 push();
                 console.log("your cloud is sad");
-                image(loadedFaceImage[faceImage.indexOf(sadFace)], this.currentPositionX, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(sadFace)], x - 160, y - 180, 340, 340)
                 break;
             case 'dead':
                 push();
                 console.log("your cloud is dead");
-                image(loadedFaceImage[faceImage.indexOf(deadFace)], this.currentPositionX, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(deadFace)], x - 160, y - 180, 340, 340)
                 break;
             case 'levelup':
                 push();
                 console.log("your cloud is levellingup");
-                image(loadedFaceImage[faceImage.indexOf(levelupFace)], this.currentPositionX, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(levelupFace)], x - 160, y - 180, 340, 340)
                 break;
             default:
                 push();
                 console.log("neutral");
-                image(loadedFaceImage[faceImage.indexOf(movingFace)], this.currentPositionX, this.currentPositionY, 340, 340)
+                image(loadedFaceImage[faceImage.indexOf(movingFace)], x - 160, y - 180, 340, 340)
+        }
+    }
+
+    this.switchAnimation = (x,y) => {
+        switch (this.currentAnimationState) {
+            case 'floating':
+                push();
+                animation(cloudAnim,x,y)
+                pop();
+                break;
+            case 'levelup':
+                push();
+                animation(disperseAnim,x,y)
+                disperseAnim.play()
+
+                if (disperseAnim.getFrame() == disperseAnim.getLastFrame()) {
+                    this.currentAnimationState = 'floating';
+                    disperseAnim.rewind();
+                }
+
+                pop();
+                break;
+            default:
+                push();
+                animation(cloudAnim,x,y)
+                pop();
+            }
+    }
+
+    this.treeWall = (x,y) => {
+        for ( i = 0; i < this.currentLevel; i ++) {
+            push()
+            let tree = createSprite(x + i, y, 50, 50);
+            tree.addAnimation('tree', treeAnim)
+            pop()
         }
     }
 
@@ -121,10 +163,13 @@ function cloudBoy(id, emotion, health, level) {
         push();
 
         let cloudSize = 150 + this.currentLevel*10;
-
         let posX = this.currentPositionX
         let posY = this.currentPositionY 
-        this.switchEmotion()
+
+        this.switchAnimation(posX,posY);
+        this.switchEmotion(posX,posY);
+        this.treeWall(posX,posY);
+        
         imageMode(CENTER)
 
     }
@@ -146,8 +191,8 @@ function cloudBoy(id, emotion, health, level) {
             //console.log(distance)
             if ( distance < 100) {
                 console.log('touch')
-                this.takeDamage(3)
                 element.killed = true;
+                this.levelUp(1)
             }
         });
 
@@ -179,6 +224,43 @@ function cloudBoy(id, emotion, health, level) {
         });
 
         bubbleArray = bubbleArray.filter(t => !t.killed);
+    }
+
+    // UI
+
+    this.healthBar = () => {
+
+        let posY = windowHeight - 80;
+        let posX = 40;
+
+        push()
+        textSize(25);
+        text('Health', posX, posY - 20);
+        pop()
+
+        push()
+        strokeWeight(0)
+        fill(234, 203, 195);
+        rect(posX, posY, windowWidth/2, 25, 25);
+
+        pop()
+        push()
+        strokeWeight(0)
+        fill(250, 241, 237)
+        rect(posX + 10, posY + 7, windowWidth/2 - 20, 10, 25);
+        pop()
+    }
+
+    this.levelBar = () => {
+
+        let posY = windowHeight - 160;
+        let posX = 40;
+        if (this.currentLevel = this.currentLevel)
+
+        push()
+        textSize(25);
+        text('Your cloud is at level ' + this.currentLevel, posX, posY - 20);
+        pop()
     }
 }
 
@@ -212,7 +294,7 @@ function bubbleBoy(id, x, y) {
 }
 
 let newCharacter = (id, emotion) => {
-    let character = new cloudBoy(id, emotion, 100, 2);
+    let character = new cloudBoy(id, emotion, 100, 1);
     console.log('added new character with ID ' + id)
     characterArray.push(character);
 }
@@ -272,7 +354,7 @@ let giveStarDust = () => {
         element.levelUp(3)
     })
 
-    setTimeout(() => {rainToggle = false}, 300)
+    setTimeout(() => {starDustToggle = false}, 300)
 
 }
 
@@ -326,7 +408,8 @@ let cloudCount = 0;
 
 function setup() {
 
-    frameRate(15)
+    textFont('Poppins');
+
 
     microBit.onConnect(function(){
         console.log("connected");
@@ -350,7 +433,7 @@ function setup() {
 
     //make test buttons
     starDustButton = createButton('Feed Star Dust');
-    starDustButton.position(10,100);
+    starDustButton.position(10,130);
     starDustButton.mousePressed(giveStarDust);
 
     blowSlider = createSlider(0, 5, 0.01);
@@ -373,10 +456,14 @@ function setup() {
   
 function draw() {
     delayTime++;
-    drawSprites();
+
+    //microbit get data every frame
+
+    getAcc()
 
     hurricaneSlider = blowSlider.value();
     background(228, 241, 245)
+
     //render every element from array
 
     treeArray.forEach((element, index) => {
@@ -388,10 +475,6 @@ function draw() {
         element.render();
         
     })
-
-    //microbit get data every frame
-
-    getAcc()
 
     characterArray.forEach((element, index) => {
         element.render();
@@ -427,8 +510,15 @@ function draw() {
                 element.currentEmotion = 'dead';
         } else if ( starDustToggle ) {
                 element.currentEmotion = 'levelup';
+        } else {
+            element.currentEmotion = 'happy';
         }
+
+        element.healthBar()
+        element.levelBar()
     })
 
+    drawSprites();
+    //render UI on top
 }
 

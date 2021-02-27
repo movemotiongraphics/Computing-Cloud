@@ -1,0 +1,8 @@
+  2/27/21 4:38:25 PM: Starting composition “Cloud Split”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\CloudSplit\CloudSplit_[#####].png    2/27/21 4:38:31 PM: Finished composition “Cloud Split”.
+
+
+  Total Time Elapsed: 6 Seconds
+Log closed on 2/27/21 at 4:38:31 PM
+

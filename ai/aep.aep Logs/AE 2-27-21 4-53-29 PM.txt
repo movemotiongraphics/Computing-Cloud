@@ -1,0 +1,8 @@
+  2/27/21 4:53:29 PM: Starting composition “Tree”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\Tree\Tree_[#####].png    2/27/21 4:53:34 PM: Finished composition “Tree”.
+
+
+  Total Time Elapsed: 5 Seconds
+Log closed on 2/27/21 at 4:53:34 PM
+

@@ -1,0 +1,8 @@
+  2/27/21 4:54:41 PM: Starting composition “Bubble”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\Bubble\Bubble_[#####].png    2/27/21 4:54:46 PM: Finished composition “Bubble”.
+
+
+  Total Time Elapsed: 5 Seconds
+Log closed on 2/27/21 at 4:54:46 PM
+
