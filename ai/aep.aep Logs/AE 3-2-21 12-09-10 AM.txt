@@ -1,0 +1,8 @@
+  3/2/21 12:09:10 AM: Starting composition “Background”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\Background\Background_[#####].png    3/2/21 12:09:45 AM: Finished composition “Background”.
+
+
+  Total Time Elapsed: 35 Seconds
+Log closed on 3/2/21 at 12:09:45 AM
+

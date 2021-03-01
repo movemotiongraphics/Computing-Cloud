@@ -1,0 +1,8 @@
+  3/2/21 12:15:21 AM: Starting composition “Cloud Join”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\CloudJoin\CloudJoin_[#####].png    3/2/21 12:15:24 AM: Finished composition “Cloud Join”.
+
+
+  Total Time Elapsed: 3 Seconds
+Log closed on 3/2/21 at 12:15:24 AM
+

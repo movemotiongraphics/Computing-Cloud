@@ -1,0 +1,8 @@
+  3/2/21 12:40:32 AM: Starting composition “Bubble Pop”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\BubblePop\BubblePop_[#####].png    3/2/21 12:40:33 AM: Finished composition “Bubble Pop”.
+
+
+  Total Time Elapsed: 1 Seconds
+Log closed on 3/2/21 at 12:40:33 AM
+

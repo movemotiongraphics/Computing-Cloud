@@ -1,0 +1,8 @@
+  3/2/21 12:57:13 AM: Starting composition “Tree Eaten”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\TreeEaten\TreeEaten_[#####].png    3/2/21 12:57:14 AM: Finished composition “Tree Eaten”.
+
+
+  Total Time Elapsed: 1 Seconds
+Log closed on 3/2/21 at 12:57:14 AM
+

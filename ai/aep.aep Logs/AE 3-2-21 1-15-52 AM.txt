@@ -1,0 +1,8 @@
+  3/2/21 1:15:52 AM: Starting composition “Tree Grow”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\TreeGrow\TreeGrow_[#####].png    3/2/21 1:15:53 AM: Finished composition “Tree Grow”.
+
+
+  Total Time Elapsed: 1 Seconds
+Log closed on 3/2/21 at 1:15:53 AM
+

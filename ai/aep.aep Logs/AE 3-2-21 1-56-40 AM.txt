@@ -1,0 +1,8 @@
+  3/2/21 1:56:40 AM: Starting composition “stardust”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\stardust\stardust_[#####].png    3/2/21 1:57:00 AM: Finished composition “stardust”.
+
+
+  Total Time Elapsed: 20 Seconds
+Log closed on 3/2/21 at 1:57:00 AM
+
