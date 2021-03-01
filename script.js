@@ -143,11 +143,24 @@ function cloudBoy(id, emotion, health, level) {
     }
 
     this.treeWall = (x,y) => {
-        for ( i = 0; i < this.currentLevel; i ++) {
-            push()
-            let tree = createSprite(x + i, y, 50, 50);
-            tree.addAnimation('tree', treeAnim)
-            pop()
+        for ( i = 0; i < this.currentLevel && i < 7; i++ ) {
+
+            if ( i == 0 ) {
+                animation(treeAnim, x + 150, y);
+            } else if ( i == 1 ) {
+                animation(treeAnim, x + 150, y + 100);
+            } else if ( i == 2 ) {
+                animation(treeAnim, x, y + 200);
+            } else if ( i == 3 ) {
+                animation(treeAnim, x - 150, y + 100);
+            } else if ( i == 4) {
+                animation(treeAnim, x - 150, y);
+            } else if ( i == 5) {
+                animation(treeAnim, x - 150, y);
+            } else if ( i == 6) {
+                animation(treeAnim, x + 50, y + 50);
+            }
+
         }
     }
 
@@ -161,15 +174,15 @@ function cloudBoy(id, emotion, health, level) {
     this.render = () => {
 
         push();
-
         let cloudSize = 150 + this.currentLevel*10;
         let posX = this.currentPositionX
         let posY = this.currentPositionY 
 
         this.switchAnimation(posX,posY);
         this.switchEmotion(posX,posY);
-        this.treeWall(posX,posY);
+        this.treeWall(posX,posY)
         
+        pop()
         imageMode(CENTER)
 
     }
@@ -272,9 +285,9 @@ function treeBoy(id, x, y) {
 
     this.render = () => {
         push();
-
         //translate(p5.Vector.fromAngle(millis() / 4000, 10))
         animation(treeAnim, this.currentPositionX, this.currentPositionY);
+        pop();
         //rotate(frameCount/50 * hurricaneSlider)
     }
 }
@@ -288,8 +301,8 @@ function bubbleBoy(id, x, y) {
 
     this.render = () => {
         push();
-
         animation(bubbleAnim, this.currentPositionX, this.currentPositionY);
+        pop();
     }
 }
 
