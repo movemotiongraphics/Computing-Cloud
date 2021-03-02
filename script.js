@@ -57,8 +57,14 @@ function loadOtherAssets(){
     cloudDisperseAnim = loadAnimation('./img/anim/CloudSplit/CloudSplit_00000.png', './img/anim/CloudSplit/CloudSplit_00052.png');
     cloudJoinAnim = loadAnimation('./img/anim/CloudJoin/CloudJoin_00002.png', './img/anim/CloudJoin/CloudJoin_00052.png');
     backgroundAnim = loadAnimation('./img/anim/Background/Background_00000.png', './img/anim/Background/Background_00162.png');
+    rainAnim = loadAnimation('./img/anim/Rain/rain_00000.png', './img/anim/Rain/rain_00049.png');
+    rainTransitionAnim = loadAnimation('./img/anim/rainTransition/RaindropTransition_00000.png', './img/anim/rainTransition/RaindropTransition_00049.png');
+    
+    gameoverTextAnim = loadAnimation('./img/anim/gameoverText/GameOverText_00000.png', './img/anim/gameoverText/GameOverText_00027.png');
+    gameoverTextLoopAnim = loadAnimation('./img/anim/gameoverText/GameOverText_00027.png', './img/anim/gameoverText/GameOverText_00061.png');
 
     stardustAnim = loadAnimation('./img/anim/stardust/stardust_00009.png', './img/anim/stardust/stardust_00091.png');
+
 
 }
 
@@ -182,7 +188,13 @@ function cloudBoy(id, emotion, health, level) {
         for ( i = 0; i < this.currentLevel && i < 8; i++ ) {
 
             if ( i == 0 ) {
-                animation(treeAnim, x + 150, y + movement);
+                animation(treeGrowAnim,x +  150,y + movement)
+
+                if (treeGrowAnim.getFrame() == treeGrowAnim.getLastFrame()) {
+                    treeGrowAnim.stop();
+                    animation(treeAnim, x + 150, y + movement);
+                }
+
             } else if ( i == 1 ) {
                 animation(treeAnim, x + 125, y + 100 + movement);
             } else if ( i == 2 ) {
@@ -248,11 +260,8 @@ function cloudBoy(id, emotion, health, level) {
             //console.log(distance)
             if ( distance < 100) {
                 element.killed = true;
-                this.levelUp(1)
-
                 element.treeEaten = true;
-
-                setTimeout(() => {element.killed = true;}, 1000)
+                this.levelUp(1)
             }
         });
 
@@ -301,7 +310,7 @@ function cloudBoy(id, emotion, health, level) {
         }
 
         push()
-        textSize(25);
+        textSize(16);
         text('Your current health is ' + health, posX, posY - 20);
         pop()
 
@@ -320,12 +329,36 @@ function cloudBoy(id, emotion, health, level) {
 
     this.levelBar = () => {
 
-        let posY = windowHeight - 160;
+        let posY = windowHeight - 120;
         let posX = 40;
 
         push()
-        textSize(25);
+        textSize(16);
         text('Your cloud is at level ' + this.currentLevel, posX, posY - 20);
+        pop()
+    }
+
+    this.noiseBar = () => {
+        let posY = windowHeight - 80;
+        let posX = windowWidth - 380;
+        let health = this.currentHealth;
+        
+
+        push()
+        textSize(16);
+        text('Your environment is ' + health, posX, posY - 20);
+        pop()
+
+        push()
+        strokeWeight(0)
+        fill(209, 232, 172);
+        rect(posX, posY, 320, 25, 25);
+
+        pop()
+        push()
+        strokeWeight(0)
+        fill(232, 242, 216)
+        rect(posX + 10, posY + 7, health , 10, 25);
         pop()
     }
 }
@@ -355,13 +388,7 @@ function treeBoy(id, x, y) {
         switch (this.currentAnimationState) {
             case 'normal':
                 push();
-                animation(treeGrowAnim,x,y)
-
-                if (treeGrowAnim.getFrame() == treeGrowAnim.getLastFrame()) {
-                    treeGrowAnim.stop();
-                    animation(treeAnim, x, y);
-                }
-                
+                    animation(treeAnim, x, y);                
                 pop();
                 break;
             case 'eaten':
@@ -372,6 +399,18 @@ function treeBoy(id, x, y) {
                     this.currentAnimationState = 'normal';
                     this.treeEaten = false;
                     treeEatenAnim.rewind();
+                }
+
+                pop();
+                break;
+            case 'grow':
+                push();
+                animation(treeGrowAnim,x,y)
+
+                if (treeGrowAnim.getFrame() == treeGrowAnim.getLastFrame()) {
+                    this.currentAnimationState = 'normal';
+                    this.treeGrow = false;
+                    treeGrowAnim.rewind();
                 }
 
                 pop();
@@ -450,12 +489,13 @@ let newBubble = (e, x, y) => {
 //events
 let levelupToggle = false;
 let hurtToggle = false;
+let gameoverToggle = false;
 
 let treefightEvent = () => {
     for (i = 0; i < 5; i++) {
         let randomX = Math.random()*windowWidth;
         let randomY = Math.random()*windowHeight;
-        newTree(i, randomX, randomY);
+        newTree(i, randomX, randomY - windowHeight);
     }
 }
 
@@ -463,7 +503,7 @@ let ballfightEvent = () => {
     for (i = 0; i < 5; i++) {
         let randomX = Math.random()*windowWidth;
         let randomY = Math.random()*windowHeight;
-        newBubble(i, randomX, randomY);
+        newBubble(i, randomX, randomY - windowHeight);
     }
 }
 
@@ -475,8 +515,9 @@ let rainEvent = () => {
     console.log('its raining!')
 
     characterArray.forEach((element, index) => {
-        element.currentHealth = 0;
+        element.currentHealth = 1;
     })
+
 }
 
 let starDustToggle = false;
@@ -498,24 +539,27 @@ let addCloud = () => {
     newCharacter(cloudCount, 'happy');
 }
 
-
 // bluetooth microbit
 
-let microBit = new uBit();
+
+let microBitArray = [];
 let accX;
 let accY;
 let moveX = 0;
 let moveY = 0;
 
 function searchDevice(){
-    microBit.searchDevice();
-    addCloud()
+    let newDevice = new uBit();
+    microBitArray.push(newDevice)
+    newDevice.searchDevice();
+    addCloud();
 }
 
 function getAcc() {
 
-        accX = microBit.getAccelerometer().x/10
-        accY = microBit.getAccelerometer().y/10
+    microBitArray.forEach((element, index) => {
+        accX = element.getAccelerometer().x/10
+        accY = element.getAccelerometer().y/10
 
         if (accX > 5) {
             moveX = moveX + 5;
@@ -532,9 +576,7 @@ function getAcc() {
         } else {
             moveY = moveY;
         }
-
-
-        console.log(accX,accY)
+    })
 }
 
 //p5 functions
@@ -546,21 +588,21 @@ function setup() {
 
     textFont('Poppins');
 
-
-    microBit.onConnect(function(){
-        console.log("connected");
-      });
-    
-    microBit.onDisconnect(function(){
-        console.log("disconnected");
-      });
+    microBitArray.forEach((element, index) => {
+        element.onConnect(function(){
+            console.log("connected");
+          });
+        
+          element.onDisconnect(function(){
+            console.log("disconnected");
+          });   
+    })
 
     createCanvas(windowWidth, windowHeight);
     treefightEvent();
     ballfightEvent();
 
     //setup events
-
 
     //setup animations
 
@@ -589,124 +631,157 @@ function setup() {
 }
   
 function draw() {
-    delayTime++;
 
-    //microbit get data every frame
+        delayTime++;
 
-    getAcc()
+        //microbit get data every frame
+    
+        getAcc()
 
-    hurricaneSlider = blowSlider.value();
-    //background
-    animation(backgroundAnim, windowWidth/2, windowHeight/2)
-
-    //render every element from array
-
-    treeArray.forEach((element, index) => {
-
-        //scrolling screen
-        element.currentPositionY = element.currentPositionY + 3;
-        element.currentPositionX = element.currentPositionX + cos(frameCount / 10)*2;
-
-        if ( element.currentPositionY > (windowHeight + 100) ) {
-            element.currentPositionY = -100;
+        hurricaneSlider = blowSlider.value();
+        //background
+        animation(backgroundAnim, windowWidth/2, windowHeight/2)
+    
+        //render every element from array
+    
+        treeArray.forEach((element, index) => {
+    
+            //scrolling screen
             element.currentPositionY = element.currentPositionY + 3;
-        }
-
-        element.render();
-
-        if ( element.treeEaten ) {
-            element.currentAnimationState = 'eaten';
-        } else {
-            element.currentAnimationState = 'normal';
-        }
-
-    })
-
-    bubbleArray.forEach((element, index) => {
-
-        //scrolling screen
-        element.currentPositionY = element.currentPositionY + 3;
-        element.currentPositionX = element.currentPositionX + cos(frameCount / 30)*2;
-
-        if ( element.currentPositionY > (windowHeight + 100) ) {
-            element.currentPositionY = -100;
+            element.currentPositionX = element.currentPositionX + cos(frameCount / 10)*2;
+    
+            if ( element.currentPositionY > (windowHeight + 100) ) {
+                element.currentPositionY = -100;
+                element.currentPositionY = element.currentPositionY + 3;
+            }
+    
+            element.render();
+    
+            if ( element.treeEaten ) {
+                element.currentAnimationState = 'eaten';
+            } else if ( element.treeGrow ) {
+                element.currentAnimationState = 'grow';
+            } else {
+                element.currentAnimationState = 'normal';
+            }
+    
+        })
+    
+        bubbleArray.forEach((element, index) => {
+    
+            //scrolling screen
             element.currentPositionY = element.currentPositionY + 3;
-        }
-
-        element.render();
-
-        if ( element.burstBubble ) {
-            element.currentAnimationState = 'burst';
-        } else {
-            element.currentAnimationState = 'normal'
-        }
-        
-    })
-
-    characterArray.forEach((element, index) => {
-        element.render();
-        element.currentPositionX = mouseX;
-        element.currentPositionY = mouseY;
-
-
-        //boundary
-
-        if (element.currentPositionX > windowWidth) {
-            element.currentPositionX = windowWidth;
-            moveX = windowWidth;
-        } else if (element.currentPositionY > windowHeight) {
-            element.currentPositionY = windowHeight;
-            moveY = windowHeight;
-        } else if (element.currentPositionX < 0) {
-            element.currentPositionX = 0;
-            moveX = 0;
-        } else if (element.currentPositionY < 0) {
-            element.currentPositionY = 0;
-            moveY = 0;
-        }
-
-        console.log(element.currentPositionX)
-        console.log(moveX)
-
-        element.eatTree()
-        element.eatBubble()
-
-        if ( hurricaneSlider > 1 ) {
-            element.currentEmotion = 'dead';
+            element.currentPositionX = element.currentPositionX + cos(frameCount / 30)*2;
+    
+            if ( element.currentPositionY > (windowHeight + 100) ) {
+                element.currentPositionY = -100;
+                element.currentPositionY = element.currentPositionY + 3;
+            }
+    
+            element.render();
+    
+            if ( element.burstBubble ) {
+                element.currentAnimationState = 'burst';
+            } else {
+                element.currentAnimationState = 'normal'
+            }
+            
+        })
+    
+        characterArray.forEach((element, index) => {
+            element.render();
+            element.currentPositionX = mouseX;
+            element.currentPositionY = mouseY;
+    
+    
+            //boundary
+    
+            if (element.currentPositionX > windowWidth) {
+                element.currentPositionX = windowWidth;
+                moveX = windowWidth;
+            } else if (element.currentPositionY > windowHeight) {
+                element.currentPositionY = windowHeight;
+                moveY = windowHeight;
+            } else if (element.currentPositionX < 0) {
+                element.currentPositionX = 0;
+                moveX = 0;
+            } else if (element.currentPositionY < 0) {
+                element.currentPositionY = 0;
+                moveY = 0;
+            }
+    
+            console.log(element.currentPositionX)
+            console.log(moveX)
+    
+            element.eatTree()
+            element.eatBubble()
+    
+            if ( hurricaneSlider > 1 ) {
+                element.currentEmotion = 'dead';
+            } else if ( rainToggle ) {
+                element.currentEmotion = 'dead';
+            } else if ( starDustToggle ) {
+               element.currentEmotion = 'levelup'; 
+     
+            } else if ( levelupToggle ) {
+                element.currentEmotion = 'levelup';
+            } else if ( hurtToggle ) {
+                element.currentEmotion = 'xxFace';
+            } else {
+                element.currentEmotion = 'happy';
+            }
+    
+            if ( element.currentHealth <= 0 ) {
+                animation(rainTransitionAnim, windowWidth/2, windowHeight/2)
+                    if (rainTransitionAnim.getFrame() == rainTransitionAnim.getLastFrame()) {
+                        rainTransitionAnim.stop();
+                        gameoverToggle = true;
+                    }
+            }
+    
+            characterArray[0].healthBar()
+            characterArray[0].levelBar()
+            characterArray[0].noiseBar()
+        })
+    
+        //screenbased events
+        if ( starDustToggle ) {
+            animation(stardustAnim, windowWidth/2, windowHeight/2)
+            if (stardustAnim.getFrame() == stardustAnim.getLastFrame()) {
+                stardustAnim.rewind();
+                starDustToggle = false
+            }
         } else if ( rainToggle ) {
-            element.currentEmotion = 'dead';
-        } else if ( starDustToggle ) {
-           element.currentEmotion = 'levelup'; 
- 
-        } else if ( levelupToggle ) {
-            element.currentEmotion = 'levelup';
-        } else if ( hurtToggle ) {
-            element.currentEmotion = 'xxFace';
-        } else {
-            element.currentEmotion = 'happy';
+            animation(rainAnim, windowWidth/2, windowHeight/2)
+            if (rainAnim.getFrame() == rainAnim.getLastFrame()) {
+                rainAnim.rewind();
+                rainToggle = false
+            }
+        } else if ( gameoverToggle ) {
+            push()
+            textFont('Rubik Mono One');
+            background(60, 70, 73); 
+
+            animation(gameoverTextAnim, windowWidth/2, windowHeight/2)
+            if (gameoverTextAnim.getFrame() == gameoverTextAnim.getLastFrame()) {
+                gameoverTextAnim.stop();
+                animation(gameoverTextLoopAnim, windowWidth/2, windowHeight/2)
+            } 
+
+            if (mouseIsPressed) {
+                gameoverToggle == false;
+                gamestartToggle == true;
+            }
+
+            pop()
         }
-
-        element.healthBar()
-        element.levelBar()
-    })
-
-    //screenbased events
-    if ( starDustToggle ) {
-        animation(stardustAnim, windowWidth/2, windowHeight/2)
-        if (stardustAnim.getFrame() == stardustAnim.getLastFrame()) {
-            stardustAnim.rewind();
-            starDustToggle = false
+    
+        //reload when no more trees
+        if ( treeArray.length == 0 || bubbleArray == 0 && gameoverToggle == false) {
+            treefightEvent();
+            ballfightEvent();
         }
-    }
-
-
-    //reload when no more trees
-    if ( treeArray.length == 0 || bubbleArray == 0 && gameOverToggle == false) {
-        treefightEvent();
-        ballfightEvent();
-    }
 
     drawSprites();
-    //render UI on top
 }
 
