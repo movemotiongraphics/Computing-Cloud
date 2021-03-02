@@ -25,6 +25,8 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
+	font-family: 'Poppins', sans-serif;
+	background-color: #E3EFF7;
 }
 ol, ul {
 	list-style: none;
@@ -40,4 +42,24 @@ q:before, q:after {
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
+}
+
+button {
+	font-family: 'Poppins', sans-serif;
+	border: none;
+	outline: none;
+	background-color: white;
+}
+
+
+.buttonStyle {
+	font-size: 1rem;
+	background-color: white;
+	border-radius: 40px;
+	padding: 15px 70px;
+	border: none;
+	outline: none;
+	-webkit-box-shadow: -5px 10px 49px -1px  rgba(255, 255, 255, 0.289);
+	-moz-box-shadow: -5px 10px 49px -1px rgba(255, 255, 255, 0.289);
+	box-shadow: -5px 10px 49px -1px  rgba(255, 255, 255, 0.289);
 }

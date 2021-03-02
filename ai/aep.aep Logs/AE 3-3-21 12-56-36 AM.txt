@@ -1,0 +1,8 @@
+  3/3/21 12:56:36 AM: Starting composition “Cloud”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\Cloud\Cloud_[#####].png    3/3/21 12:56:58 AM: Finished composition “Cloud”.
+
+
+  Total Time Elapsed: 22 Seconds
+Log closed on 3/3/21 at 12:56:58 AM
+

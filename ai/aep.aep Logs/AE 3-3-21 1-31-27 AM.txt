@@ -1,0 +1,8 @@
+  3/3/21 1:31:27 AM: Starting composition “startscreen”.
+
+  Output To: C:\Users\YuanJie\Desktop\Computing Cloud\Computing-Cloud\img\anim\startScreen\startScreen_[#####].png    3/3/21 1:31:40 AM: Finished composition “startscreen”.
+
+
+  Total Time Elapsed: 13 Seconds
+Log closed on 3/3/21 at 1:31:40 AM
+
