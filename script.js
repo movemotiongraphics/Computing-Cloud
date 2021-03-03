@@ -60,7 +60,8 @@ function loadOtherAssets(){
     rainAnim = loadAnimation('./img/anim/Rain/rain_00000.png', './img/anim/Rain/rain_00049.png');
     rainTransitionAnim = loadAnimation('./img/anim/rainTransition/RaindropTransition_00000.png', './img/anim/rainTransition/RaindropTransition_00049.png');
     
-    gameoverTextAnim = loadAnimation('./img/anim/gameoverText/GameOverText_00002.png', './img/anim/gameoverText/GameOverText_00050.png');
+    gameoverTextAnim = loadAnimation('./img/anim/gameoverText/GameOverText_00002.png', './img/anim/gameoverText/GameOverText_00027.png');
+    gameoverTextLoopAnim = loadAnimation('./img/anim/gameoverText/GameOverText_00027.png', './img/anim/gameoverText/GameOverText_00050.png');
 
     startscreenAnim = loadAnimation('./img/anim/startScreen/startScreen_00000.png', './img/anim/startScreen/startScreen_00098.png');
     stardustAnim = loadAnimation('./img/anim/stardust/stardust_00009.png', './img/anim/stardust/stardust_00091.png');
@@ -340,25 +341,31 @@ function cloudBoy(id, emotion, health, level) {
 
     this.noiseBar = () => {
         let posY = windowHeight - 80;
-        let posX = windowWidth - 380;
-        let health = this.currentHealth;
-        
+        let posX = windowWidth - 250;
+        let noise = microBitNoiseLevel;
+        let currentNoise;
+
+        if ( microBitNoiseLevel > 90 ) {
+            currentNoise = 'too noisy'
+        } else {
+            currentNoise = 'quiet'
+        }
 
         push()
         textSize(16);
-        text('Your environment is ' + health, posX, posY - 20);
+        text('Your environment is ' + currentNoise, posX, posY - 20);
         pop()
 
         push()
         strokeWeight(0)
         fill(209, 232, 172);
-        rect(posX, posY, 320, 25, 25);
+        rect(posX, posY, 150, 25, 25);
 
         pop()
         push()
         strokeWeight(0)
         fill(232, 242, 216)
-        rect(posX + 10, posY + 7, health , 10, 25);
+        rect(posX + 10, posY + 7, noise , 10, 25);
         pop()
     }
 }
@@ -497,9 +504,18 @@ let startGame = () => {
     gameRunning = true;
 }
 
+let restartGame = () => {
+    gameIsOver = false;
+    gameRunning = false;
+    restartGameButton.hide()
+    gameoverScreenAnimation.visible = false;
+}
+
 let gameOver = () => {
     gameIsOver = true;
     gameRunning = false;
+    startGameButton.hide()
+    gameoverScreenAnimation.visible = true;
 }
 
 let treefightEvent = () => {
@@ -550,32 +566,16 @@ let addCloud = () => {
     newCharacter(cloudCount, 'happy');
 }
 
-// bluetooth microbit
-
-let sortMessageArray = [];
-let microBitIsShaking;
-let microBitNoiseLevel;
-let microBitIsSqueezed;
-let microBitRotation;
-
-function microBitReceivedMessage(message){
-    sortMessage = trim(message)
-    sortMessageArray = sortMessage.split(',');
-
-    sortMessageArray = sortMessageArray.map(v => +v);
-
-    console.log(sortMessageArray)
-
-}
-
+//  USB microbit
 function searchDevice() {
-    microBitConnect();
+    uBitConnectDevice()
 }
 
 //p5 functions
 
 let delayTime = 0;
 let cloudCount = 0;
+let logoAnimation;
 
 function setup() {
 
@@ -612,32 +612,44 @@ function setup() {
     connectMicrobitButton.mousePressed(searchDevice);
 
     restartGameButton = createButton('restart :(');
-    restartGameButton.position(windowWidth/2 - 30,windowHeight - 200)
-    restartGameButton.mousePressed(startGame);
+    restartGameButton.mousePressed(restartGame);
     restartGameButton.addClass('buttonStyle');
     restartGameButton.hide()
 
     startGameButton = createButton('make your own cloud!');
-    startGameButton.position(windowWidth/2 - 150,windowHeight - 200)
     startGameButton.mousePressed(startGame);
     startGameButton.addClass('buttonStyle');
     startGameButton.hide()
-    
+
+    logoAnimation = createSprite(windowWidth/2, windowHeight/2 - 50, 100, 100)
+    logoAnimation.addAnimation('logo', startscreenAnim);
+    logoAnimation.scale = 0.5;
+    logoAnimation.visible = false;
+
+    gameoverScreenAnimation = createSprite(windowWidth/2, windowHeight/2 - 50, 100, 100)
+    gameoverScreenAnimation.addAnimation('gameover', gameoverTextAnim);
+    gameoverScreenAnimation.addAnimation('gameoverloop', gameoverTextLoopAnim);
+    gameoverScreenAnimation.scale = 0.5;
+    gameoverScreenAnimation.visible = false;
 }
   
 function draw() {
 
         delayTime++;
+        restartGameButton.hide()
+        startGameButton.hide()
+
+        let floatMovement = sin(frameCount / 50) * 25
 
         //microbit get data every frame
     
 
         hurricaneSlider = blowSlider.value();
 
-        if ( gameRunning ) {
+        if ( gameRunning == true && gameIsOver == false ) {
 
-            restartGameButton.hide()
-            startGameButton.hide()
+            logoAnimation.visible = false;
+            gameoverScreenAnimation.visible = false;
 
              //background
                 animation(backgroundAnim, windowWidth/2, windowHeight/2)
@@ -690,8 +702,12 @@ function draw() {
             
                 characterArray.forEach((element, index) => {
                     element.render();
-                    element.currentPositionX = mouseX;
-                    element.currentPositionY = mouseY;
+
+                    microbitArray.forEach((microbit, i) => {
+                        microbit.moveData()
+                        characterArray[index].currentPositionX = microbit.accX;
+                        characterArray[index].currentPositionY = microbit.accY;
+                    })
             
             
                     //boundary
@@ -734,6 +750,9 @@ function draw() {
                             if (rainTransitionAnim.getFrame() == rainTransitionAnim.getLastFrame()) {
                                 rainTransitionAnim.stop();
                                 gameOver()
+
+                                //stop from looping at 0 health after game is over
+                                element.currentHealth = 300;
                             }
 
                     }
@@ -759,16 +778,6 @@ function draw() {
                         rainAnim.rewind();
                         rainToggle = false
                     }
-                } else if ( gameIsOver ) {
-
-                    push()
-                    background(60, 70, 73); 
-                    console.log('GAMEOVER')
-        
-                    animation(gameoverTextAnim, windowWidth/2, windowHeight/2)
-                    setTimeout(() => {gameIsOver = false}, 1000)
-
-                
                 }
             
                 //reload when no more trees
@@ -776,16 +785,32 @@ function draw() {
                     treefightEvent();
                     ballfightEvent();
                 }
-
-            drawSprites();
             
         } else if ( gameIsOver == false && gameRunning == false ) {
             push()
-            animation(startscreenAnim, windowWidth/2, windowHeight/2)
-            startGameButton.show()
+            background(226, 239, 247)
+            logoAnimation.visible = true;
+            logoAnimation.animation.play();
+            startGameButton.position(windowWidth/2 - 150,windowHeight - 150 + floatMovement)
+            startGameButton.show()  
+            pop()
+        } else if ( gameIsOver == true && gameRunning == false ) {
+            push()
+            background(60, 70, 73); 
+
+            restartGameButton.show()
+            restartGameButton.position(windowWidth/2 - 30,windowHeight - 150 + floatMovement)
+            gameoverScreenAnimation.animation.play();
+
+            if (gameoverScreenAnimation.animation.getFrame() == gameoverScreenAnimation.animation.getLastFrame()) {
+                gameoverScreenAnimation.changeAnimation('gameoverloop')
+                gameoverScreenAnimation.animation.play();
+            }
 
             pop()
+
         }
 
+        drawSprites();
 }
 
