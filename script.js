@@ -552,7 +552,7 @@ let gameOver = () => {
 }
 
 let treefightEvent = () => {
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 6; i++) {
         let randomX = Math.random()*windowWidth;
         let randomY = Math.random()*windowHeight;
         newTree(i, randomX, randomY - windowHeight);
@@ -560,7 +560,7 @@ let treefightEvent = () => {
 }
 
 let ballfightEvent = () => {
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 10; i++) {
         let randomX = Math.random()*windowWidth;
         let randomY = Math.random()*windowHeight;
         newBubble(i, randomX, randomY - windowHeight);
