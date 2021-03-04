@@ -34,6 +34,11 @@ let starAnim;
 let treeGroup;
 let bubleGroup;
 
+//load audio
+let starDustAudio = './audio/stardust_audio.mp3'
+let bubbleAudio = './audio/bubble_audio.mp3'
+let backgroundAudio = './audio/background_audio.mp3'
+
 var direction = 90; 
 
 
@@ -82,7 +87,8 @@ function cloudBoy(id, emotion, health, level) {
     this.currentPositionX = 1,
     this.currentPositionY = 1,
     this.currentAnimationState = 'floating',
-    this.isDead = false;
+    this.isDead = false,
+    this.currentLifespan = 0,
     
 
     this.levelUp = (e) => {
@@ -298,6 +304,12 @@ function cloudBoy(id, emotion, health, level) {
         bubbleArray = bubbleArray.filter(t => !t.killed);
     }
 
+    // this.jumpMove = () => {
+    //     if ( microBitFalling > 0 ) {
+    //         this.currentPositionY = this.currentPositionY + (microBitFalling/100)
+    //     }
+    // }
+
     // UI
 
     this.healthBar = () => {
@@ -347,6 +359,8 @@ function cloudBoy(id, emotion, health, level) {
 
         if ( microBitNoiseLevel > 90 ) {
             currentNoise = 'too noisy'
+            screenShake(characterArray, 10, 0, 1)
+            this.takeDamage(1);
         } else {
             currentNoise = 'quiet'
         }
@@ -366,6 +380,17 @@ function cloudBoy(id, emotion, health, level) {
         strokeWeight(0)
         fill(232, 242, 216)
         rect(posX + 10, posY + 7, noise , 10, 25);
+        pop()
+    }
+
+    this.displayLifespan = () => {
+        let currentAge = this.currentLifespan;
+
+        push()
+        animation(bubbleAnim, windowWidth/2, windowHeight - 80);
+        textSize(42);
+        textAlign(CENTER);
+        text(currentAge, windowWidth/2, windowHeight - 65);
         pop()
     }
 }
@@ -461,6 +486,8 @@ function bubbleBoy(id, x, y) {
                 if (bubblePopAnim.getFrame() == bubblePopAnim.getLastFrame()) {
                     this.currentAnimationState = 'normal';
                     this.burstBubble = false;
+                    bubbleAudioLoaded.play()
+                    setTimeout(() => {bubbleAudioLoaded.stop()}, 500)
                     bubblePopAnim.rewind();
                 }
 
@@ -502,19 +529,25 @@ let gameRunning = false;
 let startGame = () => {
     gameIsOver = false;
     gameRunning = true;
+    backgroundAudioLoaded.play()
+    addCloud()
 }
 
 let restartGame = () => {
+
+    characterArray[0].currentLifespan = 0;
     gameIsOver = false;
     gameRunning = false;
     restartGameButton.hide()
     gameoverScreenAnimation.visible = false;
+
 }
 
 let gameOver = () => {
     gameIsOver = true;
     gameRunning = false;
     startGameButton.hide()
+    connectMicrobitButton.hide()
     gameoverScreenAnimation.visible = true;
 }
 
@@ -540,7 +573,6 @@ let rainEvent = () => {
 
     rainToggle = true;
     console.log('its raining!')
-
     characterArray.forEach((element, index) => {
         element.currentHealth = 2;
     })
@@ -559,6 +591,7 @@ let giveStarDust = () => {
         element.levelUp(3)
     })
 
+    stardustAudioLoaded.play()
 }
 
 let addCloud = () => {
@@ -566,9 +599,103 @@ let addCloud = () => {
     newCharacter(cloudCount, 'happy');
 }
 
-//  USB microbit
+let screenShaking = false;
+
+let screenShake = (array, amplitudeX, amplitudeY, speed) => {
+    screenShaking = true;
+
+    array.forEach((element) => {
+        element.currentPositionX = element.currentPositionX + (sin(frameCount / speed) * amplitudeX)
+        element.currentPositionY = element.currentPositionY + (sin(frameCount / speed) * (amplitudeY/2))
+    })
+    
+    setTimeout(() => {screenShaking = false}, 500)
+}
+
+let screenPushing = false;
+
+let screenPush = (array, amplitudeX, amplitudeY) => {
+    screenPushing = true;
+
+    array.forEach((element) => {
+        element.currentPositionX = element.currentPositionX + 1 * amplitudeX
+        element.currentPositionY = element.currentPositionY + 1 * (amplitudeY/2)
+    })
+    
+    setTimeout(() => {screenPushing = false}, 500)
+}
+
+
+// bluetooth microbit
+
+let sortMessageArray = [];
+let microBitIsShaking;
+let microBitNoiseLevel;
+let microBitIsSqueezed;
+let microBitRotationX;
+let microBitRotationY;
+let numberOfDevices;
+
+let accX = 0;
+let accY = 0;
+
+function microBitReceivedMessage(message){
+    sortMessage = trim(message)
+    sortMessageArray = sortMessage.split(',');
+
+    sortMessageArray = sortMessageArray.map(v => +v);
+
+    console.log(sortMessageArray)
+
+    microBitIsShaking = sortMessageArray[0];
+    microBitNoiseLevel = sortMessageArray[1];
+    microBitIsSqueezed = sortMessageArray[2];
+    microBitRotationY = sortMessageArray[3];
+    microBitRotationX = sortMessageArray[4];
+    numberOfDevices = sortMessageArray[5];
+
+}
+
+function microbitSpeed() {
+    if ( microBitRotationX < 0 ) {
+        accX = accX - 5
+    } else if ( microBitRotationX > 0 ) {
+        accX = accX + 5
+    } else {
+        accX = accX;
+    }
+
+    if ( microBitRotationY < 0 ) {
+        accY = accY + 5
+    } else if ( microBitRotationY > 0 ) {
+        accY = accY - 5
+    } else {
+        accY = accY;
+    }
+
+    if ( microBitIsShaking == 1) {
+        giveStarDust()
+    } else if ( microBitIsSqueezed == 1 ) {
+        rainEvent()
+    }
+}
+
 function searchDevice() {
-    uBitConnectDevice()
+    microBitConnect();
+}
+
+let audioPhases = () => {
+    if ( gameRunning == true && gameIsOver == false) {
+            backgroundAudioLoaded.play()
+    } else {
+        backgroundAudioLoaded.stop()
+    }
+
+    if ( starDustToggle && stardustAudioLoaded.isPlaying() == false) {
+        stardustAudioLoaded.play()
+    } else {
+        stardustAudioLoaded.stop()
+    }
 }
 
 //p5 functions
@@ -576,6 +703,10 @@ function searchDevice() {
 let delayTime = 0;
 let cloudCount = 0;
 let logoAnimation;
+
+let backgroundAudioLoaded;
+let bubbleAudioLoaded;
+let stardustAudioLoaded;
 
 function setup() {
 
@@ -587,17 +718,16 @@ function setup() {
 
     //setup events
 
+    backgroundAudioLoaded = loadSound(backgroundAudio);
+    bubbleAudioLoaded = loadSound(bubbleAudio);
+    stardustAudioLoaded = loadSound(starDustAudio);
+
     //setup animations
 
 
-    //make test buttons
     starDustButton = createButton('Feed Star Dust');
     starDustButton.position(10,130);
     starDustButton.mousePressed(giveStarDust);
-
-    blowSlider = createSlider(0, 5, 0.01);
-    blowSlider.position(10,40)
-    blowSlider.style('width', '80px');
 
     rainButton = createButton('Shower with some Rain');
     rainButton.position(10,70)
@@ -608,10 +738,11 @@ function setup() {
     addButton.mousePressed(addCloud)
 
     connectMicrobitButton = createButton('connect microbit');
-    connectMicrobitButton.position(10,10)
+    connectMicrobitButton.addClass('buttonStyle')
     connectMicrobitButton.mousePressed(searchDevice);
+    connectMicrobitButton.hide()
 
-    restartGameButton = createButton('restart :(');
+    restartGameButton = createButton('restart game');
     restartGameButton.mousePressed(restartGame);
     restartGameButton.addClass('buttonStyle');
     restartGameButton.hide()
@@ -638,15 +769,16 @@ function draw() {
         delayTime++;
         restartGameButton.hide()
         startGameButton.hide()
+        connectMicrobitButton.hide()
 
         let floatMovement = sin(frameCount / 50) * 25
 
         //microbit get data every frame
     
 
-        hurricaneSlider = blowSlider.value();
-
         if ( gameRunning == true && gameIsOver == false ) {
+
+            microbitSpeed();
 
             logoAnimation.visible = false;
             gameoverScreenAnimation.visible = false;
@@ -703,40 +835,43 @@ function draw() {
                 characterArray.forEach((element, index) => {
                     element.render();
 
-                    microbitArray.forEach((microbit, i) => {
-                        microbit.moveData()
-                        characterArray[index].currentPositionX = microbit.accX;
-                        characterArray[index].currentPositionY = microbit.accY;
-                    })
-            
+                    element.currentPositionX = accX;
+                    element.currentPositionY = accY;
+
+                    if ( gameRunning == true && gameIsOver == false ) {
+                        element.currentLifespan = Math.ceil((Math.ceil(1 + frameCount / 1 + getFrameRate())/100))
+                    } else {
+                        element.currentLifespan = element.currentLifespan
+                        return;
+                    }
+
             
                     //boundary
             
                     if (element.currentPositionX > windowWidth) {
                         element.currentPositionX = windowWidth;
-                        moveX = windowWidth;
+                        accX = windowWidth;
                     } else if (element.currentPositionY > windowHeight) {
                         element.currentPositionY = windowHeight;
-                        moveY = windowHeight;
+                        accY = windowHeight;
                     } else if (element.currentPositionX < 0) {
                         element.currentPositionX = 0;
-                        moveX = 0;
+                        accX = 0;
                     } else if (element.currentPositionY < 0) {
                         element.currentPositionY = 0;
-                        moveY = 0;
+                        accY = 0;
                     }
             
             
                     element.eatTree()
                     element.eatBubble()
+                    element.displayLifespan()
+                    // element.jumpMove()
             
-                    if ( hurricaneSlider > 1 ) {
-                        element.currentEmotion = 'dead';
-                    } else if ( rainToggle ) {
+                    if ( rainToggle ) {
                         element.currentEmotion = 'dead';
                     } else if ( starDustToggle ) {
                     element.currentEmotion = 'levelup'; 
-            
                     } else if ( levelupToggle ) {
                         element.currentEmotion = 'levelup';
                     } else if ( hurtToggle ) {
@@ -768,11 +903,24 @@ function draw() {
                 //screenbased events
                 if ( starDustToggle ) {
                     animation(stardustAnim, windowWidth/2, windowHeight/2)
+
+                    //screen shake
+                    screenShake(characterArray, 20, 5, 5)
+                    screenShake(treeArray, 10, 5, 5)
+                    screenShake(bubbleArray, 5, 2, 5)
+
+
                     if (stardustAnim.getFrame() == stardustAnim.getLastFrame()) {
                         stardustAnim.rewind();
                         starDustToggle = false
                     }
                 } else if ( rainToggle ) {
+
+                    //screen shake
+                    screenPush(characterArray, 0, 5)
+                    screenPush(treeArray, 0, 10)
+                    screenPush(bubbleArray, 0, 20)
+
                     animation(rainAnim, windowWidth/2, windowHeight/2)
                     if (rainAnim.getFrame() == rainAnim.getLastFrame()) {
                         rainAnim.rewind();
@@ -789,17 +937,23 @@ function draw() {
         } else if ( gameIsOver == false && gameRunning == false ) {
             push()
             background(226, 239, 247)
+            
             logoAnimation.visible = true;
             logoAnimation.animation.play();
-            startGameButton.position(windowWidth/2 - 150,windowHeight - 150 + floatMovement)
+            startGameButton.position(windowWidth/2 - 350,windowHeight - 150 + floatMovement)
             startGameButton.show()  
+            connectMicrobitButton.position(windowWidth/2 + 50,windowHeight - 150 + floatMovement)
+            connectMicrobitButton.show()
             pop()
         } else if ( gameIsOver == true && gameRunning == false ) {
             push()
-            background(60, 70, 73); 
-
+            background(60, 70, 73);
+            textSize(16);
+            fill(255,255,255)
+            text('your cloud lasted ' + ( characterArray[0].currentLifespan ) + ' seconds.', windowWidth/2, windowHeight/2 + 120);
+            restartGameButton.position(windowWidth/2 - 100,windowHeight - 150 + floatMovement)
             restartGameButton.show()
-            restartGameButton.position(windowWidth/2 - 30,windowHeight - 150 + floatMovement)
+            
             gameoverScreenAnimation.animation.play();
 
             if (gameoverScreenAnimation.animation.getFrame() == gameoverScreenAnimation.animation.getLastFrame()) {
