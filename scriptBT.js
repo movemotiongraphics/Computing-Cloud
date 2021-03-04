@@ -522,7 +522,7 @@ let gameRunning = false;
 let startGame = () => {
     gameIsOver = false;
     gameRunning = true;
-
+    addCloud()
 }
 
 let restartGame = () => {
@@ -539,6 +539,7 @@ let gameOver = () => {
     gameIsOver = true;
     gameRunning = false;
     startGameButton.hide()
+    connectMicrobitButton.hide()
     gameoverScreenAnimation.visible = true;
 }
 
@@ -693,21 +694,22 @@ function setup() {
 
 
     //make test buttons
-    starDustButton = createButton('Feed Star Dust');
-    starDustButton.position(10,130);
-    starDustButton.mousePressed(giveStarDust);
+    // starDustButton = createButton('Feed Star Dust');
+    // starDustButton.position(10,130);
+    // starDustButton.mousePressed(giveStarDust);
 
-    rainButton = createButton('Shower with some Rain');
-    rainButton.position(10,70)
-    rainButton.mousePressed(rainEvent)
+    // rainButton = createButton('Shower with some Rain');
+    // rainButton.position(10,70)
+    // rainButton.mousePressed(rainEvent)
 
-    addButton = createButton('Add a Cloud Boy');
-    addButton.position(10,100)
-    addButton.mousePressed(addCloud)
+    // addButton = createButton('Add a Cloud Boy');
+    // addButton.position(10,100)
+    // addButton.mousePressed(addCloud)
 
     connectMicrobitButton = createButton('connect microbit');
-    connectMicrobitButton.position(10,10)
+    connectMicrobitButton.addClass('buttonStyle')
     connectMicrobitButton.mousePressed(searchDevice);
+    connectMicrobitButton.hide()
 
     restartGameButton = createButton('restart game');
     restartGameButton.mousePressed(restartGame);
@@ -736,6 +738,7 @@ function draw() {
         delayTime++;
         restartGameButton.hide()
         startGameButton.hide()
+        connectMicrobitButton.hide()
 
         let floatMovement = sin(frameCount / 50) * 25
 
@@ -906,8 +909,10 @@ function draw() {
             
             logoAnimation.visible = true;
             logoAnimation.animation.play();
-            startGameButton.position(windowWidth/2 - 150,windowHeight - 150 + floatMovement)
+            startGameButton.position(windowWidth/2 - 350,windowHeight - 150 + floatMovement)
             startGameButton.show()  
+            connectMicrobitButton.position(windowWidth/2 + 50,windowHeight - 150 + floatMovement)
+            connectMicrobitButton.show()
             pop()
         } else if ( gameIsOver == true && gameRunning == false ) {
             push()
