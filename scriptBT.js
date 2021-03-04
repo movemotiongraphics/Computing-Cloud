@@ -299,6 +299,12 @@ function cloudBoy(id, emotion, health, level) {
         bubbleArray = bubbleArray.filter(t => !t.killed);
     }
 
+    // this.jumpMove = () => {
+    //     if ( microBitFalling > 0 ) {
+    //         this.currentPositionY = this.currentPositionY + (microBitFalling/100)
+    //     }
+    // }
+
     // UI
 
     this.healthBar = () => {
@@ -558,7 +564,6 @@ let rainEvent = () => {
 
     rainToggle = true;
     console.log('its raining!')
-
     characterArray.forEach((element, index) => {
         element.currentHealth = 2;
     })
@@ -587,7 +592,6 @@ let screenShaking = false;
 
 let screenShake = (array, amplitudeX, amplitudeY, speed) => {
     screenShaking = true;
-    console.log('its shaking')
 
     array.forEach((element) => {
         element.currentPositionX = element.currentPositionX + (sin(frameCount / speed) * amplitudeX)
@@ -601,7 +605,6 @@ let screenPushing = false;
 
 let screenPush = (array, amplitudeX, amplitudeY) => {
     screenPushing = true;
-    console.log('its shaking')
 
     array.forEach((element) => {
         element.currentPositionX = element.currentPositionX + 1 * amplitudeX
@@ -652,9 +655,9 @@ function microbitSpeed() {
     }
 
     if ( microBitRotationY < 0 ) {
-        accY = accY - 5
-    } else if ( microBitRotationY > 0 ) {
         accY = accY + 5
+    } else if ( microBitRotationY > 0 ) {
+        accY = accY - 5
     } else {
         accY = accY;
     }
@@ -829,6 +832,7 @@ function draw() {
                     element.eatTree()
                     element.eatBubble()
                     element.displayLifespan()
+                    // element.jumpMove()
             
                     if ( rainToggle ) {
                         element.currentEmotion = 'dead';
