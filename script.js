@@ -725,17 +725,17 @@ function setup() {
     //setup animations
 
 
-    starDustButton = createButton('Feed Star Dust');
-    starDustButton.position(10,130);
-    starDustButton.mousePressed(giveStarDust);
+    // starDustButton = createButton('Feed Star Dust');
+    // starDustButton.position(10,130);
+    // starDustButton.mousePressed(giveStarDust);
 
-    rainButton = createButton('Shower with some Rain');
-    rainButton.position(10,70)
-    rainButton.mousePressed(rainEvent)
+    // rainButton = createButton('Shower with some Rain');
+    // rainButton.position(10,70)
+    // rainButton.mousePressed(rainEvent)
 
-    addButton = createButton('Add a Cloud Boy');
-    addButton.position(10,100)
-    addButton.mousePressed(addCloud)
+    // addButton = createButton('Add a Cloud Boy');
+    // addButton.position(10,100)
+    // addButton.mousePressed(addCloud)
 
     connectMicrobitButton = createButton('connect microbit');
     connectMicrobitButton.addClass('buttonStyle')
@@ -916,6 +916,8 @@ function draw() {
                     }
                 } else if ( rainToggle ) {
 
+                    rainAnim.play();
+
                     //screen shake
                     screenPush(characterArray, 0, 5)
                     screenPush(treeArray, 0, 10)
@@ -923,8 +925,9 @@ function draw() {
 
                     animation(rainAnim, windowWidth/2, windowHeight/2)
                     if (rainAnim.getFrame() == rainAnim.getLastFrame()) {
-                        rainAnim.rewind();
+                        rainAnim.stop();
                         rainToggle = false
+                        rainAnim.rewind();
                     }
                 }
             
