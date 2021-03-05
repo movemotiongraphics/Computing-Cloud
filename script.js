@@ -600,7 +600,9 @@ let giveStarDust = () => {
     console.log('stardust!!')
 
     characterArray.forEach((element) => {
-        element.currentHealth = element.currentHealth + 3;
+        if ( element.currentHealth < 300 ) {
+            element.currentHealth = element.currentHealth + 1;
+        }
     })
 
     stardustAudioLoaded.play()
