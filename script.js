@@ -811,7 +811,7 @@ function draw() {
                 treeArray.forEach((element, index) => {
             
                     //scrolling screen
-                    element.currentPositionY = element.currentPositionY + 3;
+                    element.currentPositionY = element.currentPositionY + 3 + frameCount/100;
                     element.currentPositionX = element.currentPositionX + cos(frameCount / 10)*2;
             
                     if ( element.currentPositionY > (windowHeight + 100) ) {
@@ -834,7 +834,7 @@ function draw() {
                 bubbleArray.forEach((element, index) => {
             
                     //scrolling screen
-                    element.currentPositionY = element.currentPositionY + 3;
+                    element.currentPositionY = element.currentPositionY + 3 + frameCount/100 ;
                     element.currentPositionX = element.currentPositionX + cos(frameCount / 30)*2;
             
                     if ( element.currentPositionY > (windowHeight + 100) ) {
