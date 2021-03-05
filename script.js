@@ -384,7 +384,8 @@ function cloudBoy(id, emotion, health, level) {
     }
 
     this.displayLifespan = () => {
-        let currentAge = this.currentLifespan;
+        let currentAge = this.currentLifespan - gameTimeArray[gameTimeArray.length-1];
+        this.currentLifespan = currentAge;
 
         push()
         animation(bubbleAnim, windowWidth/2, windowHeight - 80);
@@ -525,17 +526,23 @@ let levelupToggle = false;
 let hurtToggle = false;
 let gameIsOver = false;
 let gameRunning = false;
+let gameRound = 0;
+let gameTimeArray = [0];
 
 let startGame = () => {
     gameIsOver = false;
     gameRunning = true;
-    backgroundAudioLoaded.play()
-    addCloud()
+    gameRound++
+    if (cloudCount == 0) {
+        addCloud()
+        backgroundAudioLoaded.loop()
+    } else {
+        console.log(gameTimeArray)
+    }
 }
 
 let restartGame = () => {
 
-    characterArray[0].currentLifespan = 0;
     gameIsOver = false;
     gameRunning = false;
     restartGameButton.hide()
@@ -544,11 +551,16 @@ let restartGame = () => {
 }
 
 let gameOver = () => {
+    gameTimeArray.push(characterArray[0].currentLifespan)
+    console.log(gameTimeArray)
+
     gameIsOver = true;
     gameRunning = false;
     startGameButton.hide()
     connectMicrobitButton.hide()
     gameoverScreenAnimation.visible = true;
+
+    
 }
 
 let treefightEvent = () => {
@@ -623,6 +635,12 @@ let screenPush = (array, amplitudeX, amplitudeY) => {
     })
     
     setTimeout(() => {screenPushing = false}, 500)
+}
+
+let KillCloud = () => {
+    characterArray.forEach((element) => {
+        element.currentHealth = element.currentHealth - 10;
+    })
 }
 
 
@@ -733,9 +751,9 @@ function setup() {
     // rainButton.position(10,70)
     // rainButton.mousePressed(rainEvent)
 
-    // addButton = createButton('Add a Cloud Boy');
+    // addButton = createButton('die');
     // addButton.position(10,100)
-    // addButton.mousePressed(addCloud)
+    // addButton.mousePressed(KillCloud)
 
     connectMicrobitButton = createButton('connect microbit');
     connectMicrobitButton.addClass('buttonStyle')
@@ -837,12 +855,12 @@ function draw() {
 
                     element.currentPositionX = accX;
                     element.currentPositionY = accY;
+                    console.log(gameTimeArray)
 
                     if ( gameRunning == true && gameIsOver == false ) {
-                        element.currentLifespan = Math.ceil((Math.ceil(1 + frameCount / 1 + getFrameRate())/100))
+                        element.currentLifespan = Math.ceil((Math.ceil((1 + frameCount / 1 + getFrameRate())/100))) 
                     } else {
-                        element.currentLifespan = element.currentLifespan
-                        return;
+                        element.currentLifespan = element.currentLifespan;
                     }
 
             
